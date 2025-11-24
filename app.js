@@ -33,6 +33,79 @@ const libros = [
   },
 ];
 
+// Base de datos de Usuarios y sus historiales de préstamo
+const usuarios = [
+  {
+    id: 101,
+    nombre: "Ana Martínez",
+    historial: [
+      {
+        libroId: 4,
+        fechaPrestamo: "2025-11-10",
+        fechaDevolucion: "2025-11-20",
+      },
+      {
+        libroId: 1,
+        fechaPrestamo: "2025-11-22",
+        fechaDevolucion: null,
+      },
+    ],
+  },
+  {
+    id: 102,
+    nombre: "Pedro Gómez",
+    historial: [
+      {
+        libroId: 2,
+        fechaPrestamo: "2025-11-01",
+        fechaDevolucion: null,
+      },
+      {
+        libroId: 3,
+        fechaPrestamo: "2025-11-15",
+        fechaDevolucion: "2025-11-20",
+      },
+    ],
+  },
+  {
+    id: 103,
+    nombre: "Sofía Hernández",
+    historial: [
+      {
+        libroId: 5,
+        fechaPrestamo: "2025-10-15",
+        fechaDevolucion: "2025-11-05",
+      },
+    ],
+  },
+  {
+    id: 104,
+    nombre: "Javier López",
+    historial: [
+      {
+        libroId: 3,
+        fechaPrestamo: "2025-10-01",
+        fechaDevolucion: "2025-10-25",
+      },
+      {
+        libroId: 4,
+        fechaPrestamo: "2025-10-28",
+        fechaDevolucion: "2025-11-05",
+      },
+      {
+        libroId: 2,
+        fechaPrestamo: "2025-11-20",
+        fechaDevolucion: "2025-11-24",
+      },
+    ],
+  },
+  {
+    id: 105,
+    nombre: "Elena Torres",
+    historial: [],
+  },
+];
+
 // Sistema de gestión
 const biblioteca = {
   // Obtener libros disponibles
@@ -50,23 +123,58 @@ const biblioteca = {
   },
 
   // Prestar libro
-  prestar(id) {
-    const libro = libros.find((l) => l.id === id);
+  prestar(libroId, usuarioId) {
+    const libro = libros.find((l) => l.id === libroId);
+    const usuario = usuarios.find((u) => u.id === usuarioId);
+
     if (!libro) return { exito: false, mensaje: "Libro no encontrado" };
+    if (!usuario) return { exito: false, mensaje: "Usuario no encontrado" };
     if (!libro.disponible) return { exito: false, mensaje: "Libro no disponible" };
 
     libro.disponible = false;
-    return { exito: true, mensaje: `Libro "${libro.titulo}" prestado exitosamente` };
+
+    const nuevoPrestamo = {
+      libroId,
+      fechaPrestamo: this.obtenerFechaActual(),
+      fechaDevolucion: null,
+    };
+
+    usuario.historial.push(nuevoPrestamo);
+
+    return {
+      exito: true,
+      mensaje: `Libro "${libro.titulo}" prestado exitosamente a ${usuario.nombre}`,
+    };
   },
 
   // Devolver libro
-  devolver(id) {
-    const libro = libros.find((l) => l.id === id);
+  devolver(libroId, usuarioId) {
+    const libro = libros.find((l) => l.id === libroId);
+    const usuario = usuarios.find((u) => u.id === usuarioId);
+
     if (!libro) return { exito: false, mensaje: "Libro no encontrado" };
+    if (!usuario) return { exito: false, mensaje: "Usuario no encontrado" };
     if (libro.disponible) return { exito: false, mensaje: "Este libro ya está disponible" };
 
+    const prestamoActivo = usuario.historial.find(
+      (prestamo) => prestamo.libroId === libroId && prestamo.fechaDevolucion === null,
+    );
+
+    if (!prestamoActivo) {
+      return {
+        exito: false,
+        mensaje: `No se encontró un préstamo activo del libro "${libro.titulo}" para el usuario ${usuario.nombre}`,
+      };
+    }
+
     libro.disponible = true;
-    return { exito: true, mensaje: `Libro "${libro.titulo}" devuelto exitosamente` };
+
+    prestamoActivo.fechaDevolucion = this.obtenerFechaActual();
+
+    return {
+      exito: true,
+      mensaje: `Libro "${libro.titulo}" devuelto exitosamente por ${usuario.nombre}`,
+    };
   },
 
   // Estadísticas
@@ -82,6 +190,10 @@ const biblioteca = {
     }, {});
 
     return { total, disponibles, prestados, porGenero };
+  },
+
+  obtenerFechaActual() {
+    return new Date().toISOString().split("T")[0];
   },
 
   //TODO: búsqueda avanzada por múltiples criterios
