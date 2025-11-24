@@ -1,3 +1,20 @@
+# README
+
+**Ejercicio**: Crea un sistema de gestión de tareas (todo list) usando closures para mantener el estado privado. Implementa funciones para agregar tareas, marcar como completadas, filtrar por estado, y obtener estadísticas. Usa arrow functions donde sea apropiado y parámetros avanzados.
+
+```sh
+# Crear directorio para práctica
+mkdir javascript-fundamentos
+cd javascript-fundamentos
+
+# Crear archivo de práctica
+touch app.js
+
+# Ejecutar con Node.js
+node app.js
+```
+
+```javascript
 console.log("TODO List");
 console.log("\n------------------------------------");
 
@@ -67,3 +84,4 @@ console.log("\n------------------------------------");
 console.log(
   `Filtradas por estado - ${isDoneStatus} : ${JSON.stringify(todo.getItemsByState(isDoneStatus), null, 2)}`,
 );
+```
